@@ -4,13 +4,17 @@ import tornado.websocket
 
 
 class EchoWebSocket(tornado.websocket.WebSocketHandler):
+    clients = []
+
     def open(self):
+        self.clients.append(self)
         print("WebSocket opened")
 
     def on_message(self, message):
         self.write_message(u"You said: " + message)
 
     def on_close(self):
+        self.cleints.remove(self)
         print("WebSocket closed")
 
 class MainHandler(tornado.web.RequestHandler):
