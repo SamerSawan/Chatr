@@ -1,6 +1,7 @@
 from websockets.sync.client import connect
 from threading import Thread
 import tkinter as tk
+import queue
 
 
 def send_message():
@@ -8,18 +9,28 @@ def send_message():
     message = entry_box.get()
     websocket.send(message)
 
-    message_display.config(state="normal")  # Enable editing
-    message_display.insert(tk.END, f"You: {message}\n")  # Append message
-    message_display.config(state="disabled")  # Disable editing again
+    update_chatbox(f"You: {message}\n")
 
     entry_box.delete(0, 'end')
-    message = websocket.recv()
-    print(f"Received: {message}")
+
+def listen_to_messages():
+    while True:
+        try:
+            message = websocket.recv()
+            root.after(0, update_chatbox, f"Server: {message}\n")
+        except:
+            break
+
+def update_chatbox(message):
+    message_display.config(state="normal")
+    message_display.insert(tk.END, message)
+    message_display.config(state="disabled")
 
 if __name__ == "__main__":
 
-
     with connect("ws://localhost:8888/websocket") as websocket:
+        thread = Thread(target=listen_to_messages, daemon=True)
+        thread.start()
 
         root = tk.Tk()
         root.title("Chatr")

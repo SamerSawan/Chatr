@@ -11,7 +11,9 @@ class EchoWebSocket(tornado.websocket.WebSocketHandler):
         print("WebSocket opened")
 
     def on_message(self, message):
-        self.write_message(u"You said: " + message)
+        for client in self.clients:
+            if client != self:
+                client.write_message(message)
 
     def on_close(self):
         self.cleints.remove(self)
